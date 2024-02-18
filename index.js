@@ -25,7 +25,7 @@ async function run() {
     client.connect();
     
     const bistroMenu = client.db('bistroBoss').collection('menu');
-
+    const bistroReviews = client.db('bistroBoss').collection('reviews');
 
     app.get('/api/v1/menu' , async(req,res) => {
 
@@ -33,6 +33,10 @@ async function run() {
         res.send(result)
     })
 
+    app.get("/api/v1/reviews" , async(req,res)=> {
+        const result = await bistroReviews.find().toArray();
+        res.send(result)
+    })
     
     // Send a ping to confirm a successful connection
     await client.db("bistroBoss").command({ ping: 1 });
@@ -48,7 +52,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Bistro boss restaurant server running ......... ... ... .. .. . .')
+  res.send('Bistro boss restaurant server running ... ... ... .. .. . ')
 })
 
 app.listen(PORT, () => {
