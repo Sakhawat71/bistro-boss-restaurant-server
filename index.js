@@ -13,48 +13,57 @@ const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster
 
 
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 async function run() {
-  try {
-    client.connect();
+    try {
+        client.connect();
+
+        const bistroMenu = client.db('bistroBoss').collection('menu');
+        const bistroReviews = client.db('bistroBoss').collection('reviews');
+        const bistroCart = client.db('bistroBoss').collection('carts');
+
+        app.get('/api/v1/menu', async (req, res) => {
+
+            const result = await bistroMenu.find().toArray();
+            res.send(result)
+        })
+
+        app.get("/api/v1/reviews", async (req, res) => {
+            const result = await bistroReviews.find().toArray();
+            res.send(result)
+        })
     
-    const bistroMenu = client.db('bistroBoss').collection('menu');
-    const bistroReviews = client.db('bistroBoss').collection('reviews');
+        // cart
+        app.post("/api/v1/post-carts" , async(req,res) => {
+            const cartItem = req.body;
+            const result = await bistroCart.insertOne(cartItem);
+            res.send(result);
+        })
 
-    app.get('/api/v1/menu' , async(req,res) => {
 
-        const result = await bistroMenu.find().toArray();
-        res.send(result)
-    })
+        // Send a ping to confirm a successful connection
+        await client.db("bistroBoss").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-    app.get("/api/v1/reviews" , async(req,res)=> {
-        const result = await bistroReviews.find().toArray();
-        res.send(result)
-    })
-    
-    // Send a ping to confirm a successful connection
-    await client.db("bistroBoss").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+    } finally {
+        // Ensures that the client will close when you finish/error
+        // await client.close();
+    }
 }
 run().catch(console.dir);
 
 
 
 app.get('/', (req, res) => {
-  res.send('Bistro boss restaurant server running ... ... ... .. .. . ')
+    res.send('Bistro boss restaurant server running ... ... ... .. .. . ')
 })
 
 app.listen(PORT, () => {
-  console.log(`Bistro boss restaurant server ${PORT}`)
+    console.log(`Bistro boss restaurant server ${PORT}`)
 })
