@@ -33,6 +33,13 @@ async function run() {
 
         app.post("/api/v1/add-user", async(req,res)=>{
             const user = req.body;
+
+            const query = {email : user.email}
+            const existingUser = await bistroUser.findOne(query)
+            if(existingUser){
+                return res.send({message: "user already exist",insertedId: null})
+            }
+
             const result = await bistroUser.insertOne(user);
             res.send(result);
         })
