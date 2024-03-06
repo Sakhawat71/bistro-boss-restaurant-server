@@ -27,7 +27,17 @@ async function run() {
         const bistroMenu = client.db('bistroBoss').collection('menu');
         const bistroReviews = client.db('bistroBoss').collection('reviews');
         const bistroCart = client.db('bistroBoss').collection('carts');
+        const bistroUser = client.db('bistroBoss').collection('user');
 
+
+
+        app.post("/api/v1/add-user", async(req,res)=>{
+            const user = req.body;
+            const result = await bistroUser.insertOne(user);
+            res.send(result);
+        })
+
+        // menu api
         app.get('/api/v1/menu', async (req, res) => {
 
             const result = await bistroMenu.find().toArray();
