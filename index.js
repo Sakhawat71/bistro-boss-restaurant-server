@@ -30,6 +30,10 @@ async function run() {
         const bistroUser = client.db('bistroBoss').collection('user');
 
 
+        app.get("/api/v1/all-user", async(req,res)=> {
+            const result = await bistroUser.find().toArray();
+            res.send(result);
+        })
 
         app.post("/api/v1/add-user", async(req,res)=>{
             const user = req.body;
@@ -42,6 +46,14 @@ async function run() {
 
             const result = await bistroUser.insertOne(user);
             res.send(result);
+        })
+
+        app.delete('/api/v1/delete-user/:id', async(req,res)=>{
+
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)}
+            const result = await bistroUser.deleteOne(query);
+            res.send(result)
         })
 
         // menu api
