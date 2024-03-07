@@ -50,10 +50,33 @@ async function run() {
 
         app.delete('/api/v1/delete-user/:id', async(req,res)=>{
 
-            const id = req.params.id;
-            const query = {_id : new ObjectId(id)}
-            const result = await bistroUser.deleteOne(query);
-            res.send(result)
+            try {
+                const id = req.params.id;
+                const query = { _id: new ObjectId(id) };
+                const result = await bistroUser.deleteOne(query);
+                res.send(result);
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                res.status(500).send('Error deleting user');
+            }
+        })
+
+        app.patch("/api/v1/make-admin/:id", async(req,res)=>{
+            try{
+                const id = req.params.id;
+                const filter = {_id : new ObjectId(id)}
+                const updateDoc = {
+                    $set: {
+                        role : "admin"
+                    }
+                }
+                const result = await bistroUser.updateOne(filter,updateDoc);
+                res.send(result)
+            }
+            catch(error){
+                console.log(error);
+                res.status(500).send({message:"can`t make admin"})
+            }
         })
 
         // menu api
