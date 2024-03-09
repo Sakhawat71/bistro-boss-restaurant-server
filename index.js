@@ -32,10 +32,16 @@ async function run() {
 
         // jwt
         app.post("/api/v1/jwt", async (req, res) => {
-            const user = req.body;
-            const token = jwt.sign("token",process.env.JWT_SECRET,{
-                expiresIn: '1h',
-            })
+            try {
+                // const user = req.body;
+                const token = jwt.sign("token", process.env.JWT_SECRET, {
+                    expiresIn: '1h',
+                })
+                res.send({ token })
+            }
+            catch (error) {
+                console.log(error);
+            }
         })
 
 
