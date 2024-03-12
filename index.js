@@ -30,22 +30,55 @@ async function run() {
         const bistroCart = client.db('bistroBoss').collection('carts');
         const bistroUser = client.db('bistroBoss').collection('user');
 
+
+        // middleware
+
+        const veryfyToken = (req, res, next) => {
+
+            console.log(req.headers.authorization);
+
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'forbidden access' })
+            }
+
+            const token = req.headers;
+
+            jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+                if (err) {
+                    return res.status(401).send({ message: 'forbidden access' })
+                }
+
+                req.decoded = decoded;
+
+                next()
+            })
+
+        }
+
         // jwt
         app.post("/api/v1/jwt", async (req, res) => {
+
             try {
-                // const user = req.body;
-                const token = jwt.sign("token", process.env.JWT_SECRET, {
+                const userEmail = req.body;
+
+                // console.log(req.body);
+
+                const token = jwt.sign(userEmail, process.env.JWT_SECRET, {
                     expiresIn: '1h',
                 })
                 res.send({ token })
-            }
-            catch (error) {
+
+            } catch (error) {
                 console.log(error);
+                res.status(500).send('Error generating JWT');
             }
         })
 
 
-        app.get("/api/v1/all-user", async (req, res) => {
+        app.get("/api/v1/all-user", veryfyToken, async (req, res) => {
+
+            // console.log(req.headers);
+
             const result = await bistroUser.find().toArray();
             res.send(result);
         })
@@ -76,6 +109,7 @@ async function run() {
             }
         })
 
+        // make user to ADMIN
         app.patch("/api/v1/make-admin/:id", async (req, res) => {
             try {
                 const id = req.params.id;
