@@ -33,19 +33,20 @@ async function run() {
 
         // middleware
 
-        const veryfyToken = (req, res, next) => {
+        const verifyToken = (req, res, next) => {
 
-            console.log(req.headers.authorization);
+            // console.log(req.headers.authorization);
 
             if (!req.headers.authorization) {
-                return res.status(401).send({ message: 'forbidden access' })
+                return res.status(401).send({ message: `forbidden access` })
             }
 
-            const token = req.headers;
+            const token = req.headers.authorization;
+            // console.log('token ',token);
 
             jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
                 if (err) {
-                    return res.status(401).send({ message: 'forbidden access' })
+                    return res.status(401).send({ message: `forbidden access ,${err.message} `})
                 }
 
                 req.decoded = decoded;
@@ -75,9 +76,11 @@ async function run() {
         })
 
 
-        app.get("/api/v1/all-user", veryfyToken, async (req, res) => {
+        app.get("/api/v1/all-user", verifyToken, async (req, res) => {
 
+            const decoded = req.decoded;
             // console.log(req.headers);
+            console.log('decoded ',decoded);
 
             const result = await bistroUser.find().toArray();
             res.send(result);
