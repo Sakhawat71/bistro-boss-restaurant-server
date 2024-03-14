@@ -42,15 +42,13 @@ async function run() {
             }
 
             const token = req.headers.authorization;
-            // console.log('token ',token);
 
             jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
                 if (err) {
-                    return res.status(401).send({ message: `forbidden access ,${err.message} `})
+                    return res.status(401).send({ message: `forbidden access ,${err.message} ` })
                 }
 
                 req.decoded = decoded;
-
                 next()
             })
 
@@ -75,12 +73,32 @@ async function run() {
             }
         })
 
+        // ******************** admin check ***************************
+
+        app.get('/api/v1/admin/:email', verifyToken ,async(req,res)=> {
+
+            const email = req.params.email;
+            if(email !== req.decoded.email){
+                return res.status(403).send({message: 'unAuthorize access'})
+            }
+
+            const query = {email: email}
+            const user = await bistroUser.findOne(query)
+            
+            let admin = false;
+            if(user){
+                admin = user?.role === 'admin';
+            }
+            res.send({admin})
+        })
+
+        // ****************************************************************
 
         app.get("/api/v1/all-user", verifyToken, async (req, res) => {
 
             const decoded = req.decoded;
             // console.log(req.headers);
-            console.log('decoded ',decoded);
+            console.log('decoded ', decoded);
 
             const result = await bistroUser.find().toArray();
             res.send(result);
