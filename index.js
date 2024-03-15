@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, deserialize } = require('mongodb');
 require('dotenv').config()
 const PORT = process.env.PORT || 5000;
 
@@ -31,11 +31,13 @@ async function run() {
         const bistroUser = client.db('bistroBoss').collection('user');
 
 
-        // middleware
+
+
+        /** ************************************************************
+         ************************** middleware *************************
+         ************************************************************** */
 
         const verifyToken = (req, res, next) => {
-
-            // console.log(req.headers.authorization);
 
             if (!req.headers.authorization) {
                 return res.status(401).send({ message: `forbidden access` })
@@ -51,16 +53,31 @@ async function run() {
                 req.decoded = decoded;
                 next()
             })
-
         }
 
-        // jwt
+        
+        const verifyAdmin = async (req, res, next) => {
+            
+            const email = req.decoded.email;
+            const query = {email: email}
+
+            const user = await bistroUser.findOne(query);
+            const isAdmin = user?.role === 'admin';
+            if(!isAdmin){
+                return res.status(403).send({message: 'forbidden access'})
+            }
+            next()
+        }
+
+
+        /** ************************************************************ 
+         ***************************** JWT ****************************
+         ************************************************************** */
+
         app.post("/api/v1/jwt", async (req, res) => {
 
             try {
                 const userEmail = req.body;
-
-                // console.log(req.body);
 
                 const token = jwt.sign(userEmail, process.env.JWT_SECRET, {
                     expiresIn: '1h',
@@ -73,38 +90,41 @@ async function run() {
             }
         })
 
-        // ******************** admin check ***************************
 
-        app.get('/api/v1/admin/:email', verifyToken ,async(req,res)=> {
+
+
+        // ******************** check Admin or not ***************************
+
+        app.get('/api/v1/admin/:email', verifyToken, async (req, res) => {
 
             const email = req.params.email;
-            if(email !== req.decoded.email){
-                return res.status(403).send({message: 'unAuthorize access'})
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: 'unAuthorize access' })
             }
 
-            const query = {email: email}
+            const query = { email: email }
             const user = await bistroUser.findOne(query)
-            
+
             let admin = false;
-            if(user){
+            if (user) {
                 admin = user?.role === 'admin';
             }
-            res.send({admin})
+            res.send({ admin })
         })
 
-        // ****************************************************************
 
-        app.get("/api/v1/all-user", verifyToken, async (req, res) => {
+
+
+        // *************************** api ******************************
+
+        app.get("/api/v1/all-user", verifyToken, verifyAdmin ,async (req, res) => {
 
             const decoded = req.decoded;
-            // console.log(req.headers);
-            console.log('decoded ', decoded);
-
             const result = await bistroUser.find().toArray();
             res.send(result);
         })
 
-        app.post("/api/v1/add-user", async (req, res) => {
+        app.post("/api/v1/add-user",verifyToken,verifyAdmin, async (req, res) => {
             const user = req.body;
 
             const query = { email: user.email }
@@ -117,7 +137,7 @@ async function run() {
             res.send(result);
         })
 
-        app.delete('/api/v1/delete-user/:id', async (req, res) => {
+        app.delete('/api/v1/delete-user/:id',verifyToken,verifyAdmin ,async (req, res) => {
 
             try {
                 const id = req.params.id;
@@ -131,7 +151,7 @@ async function run() {
         })
 
         // make user to ADMIN
-        app.patch("/api/v1/make-admin/:id", async (req, res) => {
+        app.patch("/api/v1/make-admin/:id",verifyToken,verifyAdmin ,async (req, res) => {
             try {
                 const id = req.params.id;
                 const filter = { _id: new ObjectId(id) }
