@@ -80,7 +80,7 @@ async function run() {
                 const userEmail = req.body;
 
                 const token = jwt.sign(userEmail, process.env.JWT_SECRET, {
-                    expiresIn: '1h',
+                    expiresIn: '12h',
                 })
                 res.send({ token })
 
@@ -180,6 +180,12 @@ async function run() {
             res.send(result)
         })
 
+        app.post("/api/v1/add-menu", async(req,res)=>{
+            const menuItems = req.body;
+            const result = await bistroMenu.insertOne(menuItems);
+            res.send(result)
+        })
+
         app.get("/api/v1/reviews", async (req, res) => {
             const result = await bistroReviews.find().toArray();
             res.send(result)
@@ -207,6 +213,7 @@ async function run() {
             const result = await bistroCart.deleteOne(query);
             res.send(result)
         })
+
 
 
         // Send a ping to confirm a successful connection
