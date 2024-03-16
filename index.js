@@ -180,7 +180,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post("/api/v1/add-menu", async(req,res)=>{
+        app.post("/api/v1/add-menu", verifyToken, verifyAdmin, async(req,res)=>{
             const menuItems = req.body;
             const result = await bistroMenu.insertOne(menuItems);
             res.send(result)
@@ -214,6 +214,7 @@ async function run() {
             res.send(result)
         })
 
+        
 
 
         // Send a ping to confirm a successful connection
