@@ -55,16 +55,16 @@ async function run() {
             })
         }
 
-        
+
         const verifyAdmin = async (req, res, next) => {
-            
+
             const email = req.decoded.email;
-            const query = {email: email}
+            const query = { email: email }
 
             const user = await bistroUser.findOne(query);
             const isAdmin = user?.role === 'admin';
-            if(!isAdmin){
-                return res.status(403).send({message: 'forbidden access'})
+            if (!isAdmin) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             next()
         }
@@ -121,14 +121,14 @@ async function run() {
          * *******************************************************************
          */
 
-        app.get("/api/v1/all-user", verifyToken, verifyAdmin ,async (req, res) => {
+        app.get("/api/v1/all-user", verifyToken, verifyAdmin, async (req, res) => {
 
             const decoded = req.decoded;
             const result = await bistroUser.find().toArray();
             res.send(result);
         })
 
-        app.post("/api/v1/add-user",verifyToken,verifyAdmin, async (req, res) => {
+        app.post("/api/v1/add-user", verifyToken, verifyAdmin, async (req, res) => {
             const user = req.body;
 
             const query = { email: user.email }
@@ -141,7 +141,7 @@ async function run() {
             res.send(result);
         })
 
-        app.delete('/api/v1/delete-user/:id',verifyToken,verifyAdmin ,async (req, res) => {
+        app.delete('/api/v1/delete-user/:id', verifyToken, verifyAdmin, async (req, res) => {
 
             try {
                 const id = req.params.id;
@@ -155,7 +155,7 @@ async function run() {
         })
 
         // make user to ADMIN
-        app.patch("/api/v1/make-admin/:id",verifyToken,verifyAdmin ,async (req, res) => {
+        app.patch("/api/v1/make-admin/:id", verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const id = req.params.id;
                 const filter = { _id: new ObjectId(id) }
@@ -180,15 +180,24 @@ async function run() {
             res.send(result)
         })
 
-        app.post("/api/v1/add-menu", verifyToken, verifyAdmin, async(req,res)=>{
+        app.post("/api/v1/add-menu", verifyToken, verifyAdmin, async (req, res) => {
             const menuItems = req.body;
             const result = await bistroMenu.insertOne(menuItems);
             res.send(result)
         })
 
-        app.delete("/api/v1/delete-menu/:id",verifyToken,verifyAdmin, async(req,res)=>{
+        app.get("/api/v1/menu-item/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { _id : new ObjectId(id)}
+            // const query = {_id : new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
+            const result = await bistroMenu.findOne(query);
+            console.log(query);
+            res.send(result);
+        })
+
+        app.delete("/api/v1/delete-menu/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
             const result = await bistroMenu.deleteOne(query)
             res.send(result)
         })
@@ -222,7 +231,7 @@ async function run() {
             res.send(result)
         })
 
-        
+
 
 
         // Send a ping to confirm a successful connection
