@@ -188,11 +188,28 @@ async function run() {
 
         app.get("/api/v1/menu-item/:id", async (req, res) => {
             const id = req.params.id;
-            // const query = {_id : new ObjectId(id)};
             const query = { _id: new ObjectId(id) };
             const result = await bistroMenu.findOne(query);
-            console.log(query);
             res.send(result);
+        })
+
+        app.patch("/api/v1/update-item/:id", async(req,res)=>{
+            const item = req.body;
+            const id = req.params.id;
+            const filter = {_id : new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    name : item.name,
+                    category: item.category,
+                    price: item.price,
+                    recipe : item.recipe,
+                    image : item.image,
+                }
+            }
+
+            const result = await bistroMenu.updateOne(filter,updateDoc);
+            res.send(result);
+
         })
 
         app.delete("/api/v1/delete-menu/:id", verifyToken, verifyAdmin, async (req, res) => {
