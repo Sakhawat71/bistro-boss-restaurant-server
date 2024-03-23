@@ -4,6 +4,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId, deserialize } = require('mongodb');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.VITE_STRIPE_SK)
 const PORT = process.env.PORT || 5000;
 
 //middlewar
@@ -117,7 +118,7 @@ async function run() {
 
         /**
          * *******************************************************************
-         * *************************  ALL API ********************************
+         * *************************  ALL API  *******************************
          * *******************************************************************
          */
 
@@ -193,21 +194,21 @@ async function run() {
             res.send(result);
         })
 
-        app.patch("/api/v1/update-item/:id", async(req,res)=>{
+        app.patch("/api/v1/update-item/:id", async (req, res) => {
             const item = req.body;
             const id = req.params.id;
-            const filter = {_id : new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
-                    name : item.name,
+                    name: item.name,
                     category: item.category,
                     price: item.price,
-                    recipe : item.recipe,
-                    image : item.image,
+                    recipe: item.recipe,
+                    image: item.image,
                 }
             }
 
-            const result = await bistroMenu.updateOne(filter,updateDoc);
+            const result = await bistroMenu.updateOne(filter, updateDoc);
             res.send(result);
 
         })
@@ -248,7 +249,26 @@ async function run() {
             res.send(result)
         })
 
+        /**
+         * *****************************************************************
+         * *************************** PayMent *****************************
+         * *****************************************************************
+         */
 
+        app.post('/api/v1/create-payment-intent', async (req, res) => {
+
+            const { price } = req.body;
+            const priceInt = parseInt(price * 100);
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: priceInt,
+                currency: 'usd',
+                payment_method_types : ['card']
+            })
+            res.send({
+                clientSecret : paymentIntent.client_secret,
+            })
+        })
 
 
         // Send a ping to confirm a successful connection
