@@ -270,6 +270,11 @@ async function run() {
             })
         })
 
+        app.post('/api/payment-details', async(req,res)=>{
+            const payment = req.body;
+            console.log(payment);
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("bistroBoss").command({ ping: 1 });
