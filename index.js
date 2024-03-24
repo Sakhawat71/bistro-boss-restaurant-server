@@ -30,6 +30,7 @@ async function run() {
         const bistroReviews = client.db('bistroBoss').collection('reviews');
         const bistroCart = client.db('bistroBoss').collection('carts');
         const bistroUser = client.db('bistroBoss').collection('user');
+        const bistroPayment = client.db('bistroBoss').collection('payments')
 
 
 
@@ -263,16 +264,28 @@ async function run() {
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: priceInt,
                 currency: 'usd',
-                payment_method_types : ['card']
+                payment_method_types: ['card']
             })
             res.send({
-                clientSecret : paymentIntent.client_secret,
+                clientSecret: paymentIntent.client_secret,
             })
         })
 
-        app.post('/api/payment-details', async(req,res)=>{
+        app.post('/api/payment-details', async (req, res) => {
+
             const payment = req.body;
-            console.log(payment);
+            const paymentResult = await bistroPayment.insertOne(payment);
+
+            const query = {
+                _id: {
+                    $in: payment.itemIds.map(id => new ObjectId(id))
+                }
+            }
+
+            const deleteResult = await bistroCart.deleteMany(query);
+
+            // console.log(paymentResult ,deleteResult);
+            res.send( {paymentResult ,deleteResult})
         })
 
 
