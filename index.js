@@ -288,9 +288,13 @@ async function run() {
             res.send( {paymentResult ,deleteResult})
         })
 
-        app.get('/api/v1/payments/:email', async(req,res)=>{
+        app.get('/api/v1/payments/:email', verifyToken ,async(req,res)=>{
 
             // const decodedEmail = req.decoded.email;
+            if(req.params.email !== req.decoded.email){
+                return res.send("nothing")
+            }
+
             const query = {email : req.params.email}
             // console.log(decodedEmail);
             const result = await bistroPayment.find(query).toArray()
