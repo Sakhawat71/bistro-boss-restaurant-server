@@ -290,14 +290,12 @@ async function run() {
 
         app.get('/api/v1/payments/:email', verifyToken ,async(req,res)=>{
 
-            // const decodedEmail = req.decoded.email;
             if(req.params.email !== req.decoded.email){
-                return res.send("nothing")
+                return res.status(403).send({message: "Forbidden access"})
             }
-
             const query = {email : req.params.email}
-            // console.log(decodedEmail);
-            const result = await bistroPayment.find(query).toArray()
+            // const sortx = { timestamp: -1 };
+            const result = await bistroPayment.find(query).toArray();
             res.send(result)
         })
 
