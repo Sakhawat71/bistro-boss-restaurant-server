@@ -271,7 +271,7 @@ async function run() {
             })
         })
 
-        app.post('/api/payment-details', async (req, res) => {
+        app.post('/api/v1/payment-details', async (req, res) => {
 
             const payment = req.body;
             const paymentResult = await bistroPayment.insertOne(payment);
@@ -286,6 +286,15 @@ async function run() {
 
             // console.log(paymentResult ,deleteResult);
             res.send( {paymentResult ,deleteResult})
+        })
+
+        app.get('/api/v1/payments/:email', async(req,res)=>{
+
+            // const decodedEmail = req.decoded.email;
+            const query = {email : req.params.email}
+            // console.log(decodedEmail);
+            const result = await bistroPayment.find(query).toArray()
+            res.send(result)
         })
 
 
