@@ -123,16 +123,32 @@ async function run() {
             const menuItems = await bistroMenu.estimatedDocumentCount();
             const orders = await bistroPayment.estimatedDocumentCount();
 
+            const payment = await bistroPayment.aggregate([
+                {
+                    $group : {
+                        _id : null,
+                        totalRevenue: {
+                            $sum : '$price'
+                        }
+                    }
+                }
+            ]).toArray();
+            
+            const revenue = payment.length > 0 ? payment[0].totalRevenue : 0; 
+
+            /** old system
             const payments = await bistroPayment.find().toArray();
             const revenue = await payments.reduce((
                 (total, paymet) => { return total + paymet.price}
             ),0)
+             */
 
             res.send({
                 user,
                 menuItems,
                 orders,
-                revenue
+                revenue,
+                // payment
             })
         })
 
