@@ -94,8 +94,11 @@ async function run() {
 
 
 
-
-        // ******************** check Admin or not ***************************
+        /**
+         * ****************************************************************
+         * *************************** Admin ******************************
+         * ****************************************************************
+         */
 
         app.get('/api/v1/admin/:email', verifyToken, async (req, res) => {
 
@@ -114,6 +117,24 @@ async function run() {
             res.send({ admin })
         })
 
+        app.get('/api/v1/admin-states', async (req, res) => {
+
+            const user = await bistroUser.estimatedDocumentCount();
+            const menuItems = await bistroMenu.estimatedDocumentCount();
+            const orders = await bistroPayment.estimatedDocumentCount();
+
+            const payments = await bistroPayment.find().toArray();
+            const revenue = await payments.reduce((
+                (total, paymet) => { return total + paymet.price}
+            ),0)
+
+            res.send({
+                user,
+                menuItems,
+                orders,
+                revenue
+            })
+        })
 
 
 
@@ -285,15 +306,15 @@ async function run() {
             const deleteResult = await bistroCart.deleteMany(query);
 
             // console.log(paymentResult ,deleteResult);
-            res.send( {paymentResult ,deleteResult})
+            res.send({ paymentResult, deleteResult })
         })
 
-        app.get('/api/v1/payments/:email', verifyToken ,async(req,res)=>{
+        app.get('/api/v1/payments/:email', verifyToken, async (req, res) => {
 
-            if(req.params.email !== req.decoded.email){
-                return res.status(403).send({message: "Forbidden access"})
+            if (req.params.email !== req.decoded.email) {
+                return res.status(403).send({ message: "Forbidden access" })
             }
-            const query = {email : req.params.email}
+            const query = { email: req.params.email }
             // const sortx = { timestamp: -1 };
             const result = await bistroPayment.find(query).toArray();
             res.send(result)
