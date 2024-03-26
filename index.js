@@ -117,7 +117,7 @@ async function run() {
             res.send({ admin })
         })
 
-        app.get('/api/v1/admin-states',verifyToken, verifyAdmin, async (req, res) => {
+        app.get('/api/v1/admin-states', verifyToken, verifyAdmin, async (req, res) => {
 
             const user = await bistroUser.estimatedDocumentCount();
             const menuItems = await bistroMenu.estimatedDocumentCount();
@@ -125,33 +125,49 @@ async function run() {
 
             const payment = await bistroPayment.aggregate([
                 {
-                    $group : {
-                        _id : null,
+                    $group: {
+                        _id: null,
                         totalRevenue: {
-                            $sum : '$price'
+                            $sum: '$price'
                         }
                     }
                 }
             ]).toArray();
-            
-            const revenue = payment.length > 0 ? payment[0].totalRevenue : 0; 
 
-            /** old system
-            const payments = await bistroPayment.find().toArray();
-            const revenue = await payments.reduce((
-                (total, paymet) => { return total + paymet.price}
-            ),0)
-             */
+            const revenue = payment.length > 0 ? payment[0].totalRevenue : 0;
 
             res.send({
                 user,
                 menuItems,
                 orders,
                 revenue,
-                // payment
             })
         })
 
+        app.get('/api/v1/order-states', async (req, res) => {
+            try {
+                const result = await bistroPayment.aggregate([
+                    {
+                        $unwind: '$menuIds'
+                    },
+                    {
+                        $lookup: {
+                            from: 'menus',
+                            localField: 'menuIds',
+                            foreignField: '_id',
+                            as: 'soldMenuIds'
+                        }
+                    }
+                ]).toArray()
+
+                res.send(result);
+            }
+            catch (error) {
+                console.error('Error retrieving order states:', error);
+                res.status(500).send('Internal Server Error');
+            }
+
+        })
 
 
         /**
