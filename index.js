@@ -117,7 +117,7 @@ async function run() {
             res.send({ admin })
         })
 
-        app.get('/api/v1/admin-states', async (req, res) => {
+        app.get('/api/v1/admin-states',verifyToken, verifyAdmin, async (req, res) => {
 
             const user = await bistroUser.estimatedDocumentCount();
             const menuItems = await bistroMenu.estimatedDocumentCount();
