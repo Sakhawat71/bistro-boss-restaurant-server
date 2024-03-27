@@ -145,6 +145,12 @@ async function run() {
         })
 
 
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // bug => '_id' work on bistroPayment collecton TODO => need to fix
+        // need to fix =>  '_id' should be work with 'menu'
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
         app.get('/api/v1/order-states', async (req, res) => {
             try {
                 const result = await bistroPayment.aggregate([
@@ -356,8 +362,8 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("bistroBoss").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("bistroBoss").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     } finally {
         // Ensures that the client will close when you finish/error
