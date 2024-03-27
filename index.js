@@ -144,6 +144,7 @@ async function run() {
             })
         })
 
+
         app.get('/api/v1/order-states', async (req, res) => {
             try {
                 const result = await bistroPayment.aggregate([
@@ -152,22 +153,23 @@ async function run() {
                     },
                     {
                         $lookup: {
-                            from: 'menus',
+                            from: 'menu',
                             localField: 'menuIds',
                             foreignField: '_id',
-                            as: 'soldMenuIds'
+                            as: 'menu_items'
                         }
                     }
-                ]).toArray()
+                ]).toArray();
+
+                // console.log(result);
 
                 res.send(result);
-            }
-            catch (error) {
+            } catch (error) {
                 console.error('Error retrieving order states:', error);
                 res.status(500).send('Internal Server Error');
             }
+        });
 
-        })
 
 
         /**
